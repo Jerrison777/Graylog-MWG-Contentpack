@@ -1,0 +1,119 @@
+{
+  "id" : null,
+  "name" : "McAfee Web Gateway 7.5",
+  "description" : "Collecting output from MWG.\r\n\r\nGet your MWG to export logs like this (do NITRO/SIEM): https://community.mcafee.com/docs/DOC-5206 and  adjust the output in two ways: we erased the first and second field (first was just the appliance name, second was date).\r\n\r\n\r\n",
+  "category" : "Web Gateways, Proxy",
+  "inputs" : [ {
+    "title" : "Syslog-MWG",
+    "configuration" : {
+      "port" : 50014,
+      "allow_override_date" : true,
+      "override_source" : "",
+      "bind_address" : "10.0.0.1",
+      "store_full_message" : true,
+      "recv_buffer_size" : 1048576
+    },
+    "type" : "org.graylog2.inputs.syslog.udp.SyslogUDPInput",
+    "global" : true,
+    "extractors" : [ {
+      "title" : "MWG-GROK",
+      "type" : "GROK",
+      "configuration" : {
+        "grok_pattern" : "\\|auth_user=%{DATA:mwg_user}\\|src_ip=%{IPV4:mwg_srcip}\\|server_ip=%{IPV4:mwg_serverip}\\|host=%{DATA:mwg_host}\\|url_port=%{NUMBER:mwg_urlport}\\|status_code=%{NUMBER:mwg_statuscode}\\|bytes_from_client=%{NUMBER:mwg_bytesFROMclient;int}\\|bytes_to_client=%{NUMBER:mwg_bytesTOclient;int}\\|categories=%{DATA:mwg_categories}\\|rep_level=%{DATA:mwg_replevel}\\|method=%{WORD:mwg_method}\\|url=%{DATA:mwg_url}\\|media_type=%{DATA:mwg_mediatype}\\|application_name=%{DATA:mwg_appname}\\|user_agent=%{DATA:mwg_useragent}\\|block_res=%{NUMBER:mwg_blockcode}\\|block_reason=%{DATA:mwg_blockreason}\\|virus_name=%{DATA:mwg_virusname}\\|hash=%{DATA:mwg_hash}\\|filename=%{DATA:mwg_filename}\\|filesize=%{NUMBER:mwg_filesize;int}\\|"
+      },
+      "converters" : [ ],
+      "order" : 0,
+      "cursor_strategy" : "COPY",
+      "target_field" : "message",
+      "source_field" : "message",
+      "condition_type" : "NONE",
+      "condition_value" : ""
+    } ],
+    "static_fields" : { }
+  } ],
+  "streams" : [ {
+    "id" : "5502d73ce4b092ea55e35ea2",
+    "title" : "MWG Proxy Logs",
+    "description" : "MWG Logs",
+    "disabled" : false,
+    "outputs" : [ ],
+    "stream_rules" : [ {
+      "type" : "REGEX",
+      "field" : "source",
+      "value" : "MWG1|MWG2",
+      "inverted" : false
+    } ]
+  } ],
+  "outputs" : [ ],
+  "dashboards" : [ {
+    "title" : "MWG Proxy Logs",
+    "description" : "Proxy Logs",
+    "dashboard_widgets" : [ {
+      "description" : "Blocked Pages - 24h",
+      "type" : "SEARCH_RESULT_CHART",
+      "configuration" : {
+        "interval" : "hour",
+        "query" : "_exists_:mwg_blockreason AND NOT mwg_blockreason:\"Authentication Required\"",
+        "timerange" : {
+          "range" : 86400,
+          "type" : "relative"
+        },
+        "stream_id" : "5502d73ce4b092ea55e35ea2"
+      },
+      "col" : 2,
+      "row" : 4,
+      "cache_time" : 60
+    }, {
+      "description" : "Blocked because - 24h",
+      "type" : "QUICKVALUES",
+      "configuration" : {
+        "field" : "mwg_blockreason",
+        "query" : "NOT mwg_blockreason:\"Authentication Required\"",
+        "show_data_table" : true,
+        "timerange" : {
+          "range" : 86400,
+          "type" : "relative"
+        },
+        "stream_id" : "5502d73ce4b092ea55e35ea2",
+        "show_pie_chart" : true
+      },
+      "col" : 1,
+      "row" : 1,
+      "cache_time" : 60
+    }, {
+      "description" : "Malicious Site - 24h",
+      "type" : "QUICKVALUES",
+      "configuration" : {
+        "field" : "mwg_url",
+        "query" : "mwg_categories:\"Malicious Sites\" AND NOT mwg_url:https\\:\\/\\/api.ipify.org",
+        "show_data_table" : true,
+        "timerange" : {
+          "range" : 86400,
+          "type" : "relative"
+        },
+        "stream_id" : "5502d73ce4b092ea55e35ea2",
+        "show_pie_chart" : true
+      },
+      "col" : 3,
+      "row" : 1,
+      "cache_time" : 60
+    }, {
+      "description" : "Blocked Categories - 24h",
+      "type" : "QUICKVALUES",
+      "configuration" : {
+        "field" : "mwg_categories",
+        "query" : "_exists_:mwg_blockreason",
+        "show_data_table" : true,
+        "timerange" : {
+          "range" : 86400,
+          "type" : "relative"
+        },
+        "stream_id" : "5502d73ce4b092ea55e35ea2",
+        "show_pie_chart" : true
+      },
+      "col" : 2,
+      "row" : 1,
+      "cache_time" : 60
+    } ]
+  } ]
+}
