@@ -2,7 +2,7 @@
   "id" : null,
   "name" : "McAfee Web Gateway 7.5",
   "description" : "Collecting output from MWG.\r\n\r\nGet your MWG to export logs like this (do NITRO/SIEM): https://community.mcafee.com/docs/DOC-5206 and  adjust the output in two ways: we erased the first and second field (first was just the appliance name, second was date).\r\n\r\n\r\n",
-  "category" : "Web Gateways, Proxy",
+  "category" : "Web Gateways and Proxy",
   "inputs" : [ {
     "title" : "Syslog-MWG",
     "configuration" : {
